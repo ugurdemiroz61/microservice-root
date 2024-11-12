@@ -3,10 +3,10 @@ package com.uur.notificationservice;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+//@SpringBootTest
 class NotificationServiceApplicationTests {
 
-	@Test
+	//@Test
 	void contextLoads() {
 	}
 

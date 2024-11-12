@@ -1,5 +1,5 @@
 server:
-  port: 8888
+  port: ${SERVER_PORT:8888}
 
 spring:
   application:
@@ -9,10 +9,6 @@ spring:
       server:
         native:
           search-locations: classpath:/microservice
-  boot:
-    admin:
-      client:
-        url: ${SPRING_BOOT_ADMIN_SERVER_URL:http://localhost:8508}
 
   profiles:
     active: native

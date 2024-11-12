@@ -1,0 +1,169 @@
+version: '3.1'
+
+networks:
+  uur:
+
+services:
+  cassandra:
+    image: cassandra
+    container_name: hk-cassandra-server
+    networks:
+      - uur
+    ports:
+      - '9042:9042'
+
+  mysql:
+    image: mysql
+    container_name: hk-mysql
+    networks:
+      - uur
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: microservice-root
+      MYSQL_DATABASE: microserviceroot
+    ports:
+      - '3306:3306'
+
+  elasticsearch:
+    image: elasticsearch:8.15.3
+    container_name: hk-elasticsearch
+    networks:
+      - uur
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+
+  msrabbitmq:
+    image: rabbitmq:4-management
+    container_name: hk-msrabbitmq
+    networks:
+      - uur
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    environment:
+      - RABBITMQ_DEFAULT_USER=uur
+      - RABBITMQ_DEFAULT_PASS=uur
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: hk-zipkin-server
+    networks:
+      - uur
+    ports:
+      - '9411:9411'
+
+  # Local Services -----------------------
+
+  hk-account-service:
+    image: uur/account-service:10.0.1
+    container_name: hk-account-service
+    networks:
+      - uur
+    restart: always
+    environment:
+      SPRING_BOOT_ADMIN_SERVER_URL: http://hk-admin-server:8508
+      ZIPKIN_SERVER_URL: http://hk-zipkin-server:9411
+      EUREKA_SERVER_HOSTNAME: hk-eureka-server
+      EUREKA_SERVER_URL: http://hk-eureka-server:8500/eureka/
+      CONFIG_SERVER_URL: http://hk-config-server:8888
+      CASSANDRA_SERVER_HOST: hk-cassandra-server
+      CASSANDRA_SERVER_PORT: 9042
+      CASSANDRA_SERVER_KEYSPACE: springcloud
+      CASSANDRA_SERVER_USERNAME: cassandra
+      CASSANDRA_SERVER_PASSWORD: cassandra
+      SERVER_PORT: 8501
+    ports:
+      - '8501:8501'
+
+  hk-ticket-service:
+    image: uur/ticket-service:10.0.1
+    container_name: hk-ticket-service
+    networks:
+      - uur
+    restart: always
+    environment:
+      SPRING_BOOT_ADMIN_SERVER_URL: http://hk-admin-server:8508
+      ZIPKIN_SERVER_URL: http://hk-zipkin-server:9411
+      EUREKA_SERVER_HOSTNAME: hk-eureka-server
+      EUREKA_SERVER_URL: http://hk-eureka-server:8500/eureka/
+      CONFIG_SERVER_URL: http://hk-config-server:8888
+      MYSQL_URL: jdbc:mysql://hk-mysql:3306/microserviceroot?allowPublicKeyRetrieval=true&useSSL=false
+      MYSQL_USER: root
+      MYSQL_PASSWORD: microservice-root
+      RABBITMQ_USERNAME: uur
+      RABBITMQ_PASSWORD: uur
+      SERVER_PORT: 8502
+    ports:
+      - '8502:8502'
+
+  hk-notification-service:
+    image: uur/notification-service:10.0.1
+    container_name: hk-notification-service
+    networks:
+      - uur
+    restart: always
+    environment:
+      SPRING_BOOT_ADMIN_SERVER_URL: http://hk-admin-server:8508
+      ZIPKIN_SERVER_URL: http://hk-zipkin-server:9411
+      EUREKA_SERVER_HOSTNAME: hk-eureka-server
+      EUREKA_SERVER_URL: http://hk-eureka-server:8500/eureka/
+      CONFIG_SERVER_URL: http://hk-config-server:8888
+      SERVER_PORT: 8503
+    ports:
+      - '8503:8503'
+
+  # System Services -----------------------
+  hk-config-server:
+    image: uur/config-server:10.0.1
+    container_name: hk-config-server
+    networks:
+      - uur
+    restart: always
+    environment:
+      SERVER_PORT: 8888
+    ports:
+      - '8888:8888'
+
+  hk-eureka-server:
+    image: uur/eureka-server:10.0.1
+    container_name: hk-eureka-server
+    networks:
+      - uur
+    restart: always
+    environment:
+      SPRING_BOOT_ADMIN_SERVER_URL: http://hk-admin-server:8508
+      ZIPKIN_SERVER_URL: http://hk-zipkin-server:9411
+      EUREKA_SERVER_HOSTNAME: hk-eureka-server
+      EUREKA_SERVER_URL: http://hk-eureka-server:8500/eureka/
+      CONFIG_SERVER_URL: http://hk-config-server:8888
+      SERVER_PORT: 8500
+    ports:
+      - '8500:8500'
+
+  hk-admin-server:
+    image: uur/admin-server:10.0.1
+    container_name: hk-admin-server
+    networks:
+      - uur
+    restart: always
+    environment:
+      EUREKA_SERVER_URL: http://hk-eureka-server:8500/eureka/
+      SERVER_PORT: 8508
+    ports:
+      - '8508:8508'
+
+  hk-gateway-server:
+    image: uur/gateway-server:10.0.1
+    container_name: hk-gateway-server
+    networks:
+      - uur
+    restart: always
+    environment:
+      EUREKA_SERVER_URL: http://hk-eureka-server:8500/eureka/
+      SERVER_PORT: 8088
+    ports:
+      - '8088:8088'

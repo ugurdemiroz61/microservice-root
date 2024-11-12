@@ -1,30 +1,46 @@
 version: '3.1'
 
+networks:
+  uur:
+
 services:
   cassandra:
     image: cassandra
+    container_name: hk-cassandra-server
+    networks:
+      - uur
     ports:
       - '9042:9042'
 
   mysql:
     image: mysql
+    container_name: hk-mysql
+    networks:
+      - uur
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: microservice-root
+      MYSQL_DATABASE: microserviceroot
     ports:
       - '3306:3306'
 
   elasticsearch:
     image: elasticsearch:8.15.3
+    container_name: hk-elasticsearch
+    networks:
+      - uur
     ports:
       - 9200:9200
       - 9300:9300
     environment:
-      discovery.type: single-node
-      xpack.security.enabled: false
+      - discovery.type=single-node
+      - xpack.security.enabled=false
 
   msrabbitmq:
     image: rabbitmq:4-management
+    container_name: hk-msrabbitmq
+    networks:
+      - uur
     ports:
       - '5672:5672'
       - '15672:15672'
@@ -34,5 +50,8 @@ services:
 
   zipkin:
     image: openzipkin/zipkin
+    container_name: hk-zipkin-server
+    networks:
+      - uur
     ports:
       - '9411:9411'

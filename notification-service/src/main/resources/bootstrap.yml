@@ -1,13 +1,11 @@
 spring:
-  profiles:
-    active: DEV
   application:
     name: notification-service
 
   cloud:
     config:
       profile: native
-      uri: http://localhost:8888
+      uri: ${CONFIG_SERVER_URL:http://localhost:8888}
 
     stream:
       bindings:

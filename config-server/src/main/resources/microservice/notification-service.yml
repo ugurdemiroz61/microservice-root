@@ -1,5 +1,5 @@
 server:
-  port: 8503
+  port: ${SERVER_PORT:8503}
 
 spring:
   application:
@@ -14,6 +14,10 @@ spring:
             trusted-packages: "*"
     username: uur
     password: uur
+    boot:
+      admin:
+        client:
+          url: ${SPRING_BOOT_ADMIN_SERVER_URL:http://localhost:8508}
 
 msrabbitmq:
   exchange: default
@@ -35,6 +39,6 @@ management:
 eureka:
   client:
     instance:
-      hostname: localhost
+      hostname: ${EUREKA_SERVER_HOSTNAME:localhost}
     serviceUrl:
-      defaultZone: http://localhost:8500/eureka/
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8500/eureka/}
